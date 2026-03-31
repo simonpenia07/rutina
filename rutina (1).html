@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Rutina</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #161618;
+    --surface2: #1e1e22;
+    --border: #2a2a30;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0f0f0;
+    --muted: #6b6b7a;
+    --heavy: #ff3d3d;
+    --light: #47c5ff;
+    --topset: #c084fc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 100; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 3px; color: var(--accent); }
+  .week-selector { display: flex; align-items: center; gap: 10px; }
+  .week-selector button { background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+  .week-selector button:hover { border-color: var(--accent); color: var(--accent); }
+  .week-label { font-size: 13px; color: var(--muted); min-width: 72px; text-align: center; }
+
+  .tabs { display: flex; gap: 3px; padding: 14px 20px 0; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { padding: 9px 16px; border-radius: 8px 8px 0 0; border: 1px solid transparent; border-bottom: none; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif; background: transparent; color: var(--muted); white-space: nowrap; transition: all .2s; letter-spacing: .5px; }
+  .tab:hover { color: var(--text); }
+  .tab.active { background: var(--surface); border-color: var(--border); color: var(--accent); }
+  .tab.rugby { color: var(--light); }
+  .tab.rugby.active { color: var(--light); border-color: var(--light)33; }
+
+  main { padding: 20px; max-width: 680px; margin: 0 auto; }
+  .day-view { display: none; }
+  .day-view.active { display: block; }
+  .day-header { margin-bottom: 24px; }
+  .day-name { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 4px; line-height: 1; margin-bottom: 4px; }
+  .day-subtitle { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+  .block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 14px; overflow: hidden; }
+  .block-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .block-num { font-family: 'Bebas Neue', sans-serif; font-size: 10px; color: var(--accent); letter-spacing: 2px; opacity: .6; }
+  .block-title { font-size: 12px; font-weight: 600; letter-spacing: .5px; color: var(--muted); text-transform: uppercase; }
+
+  .exercise-section { border-bottom: 1px solid var(--border); }
+  .exercise-section:last-child { border-bottom: none; }
+  .ex-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px 8px; }
+  .ex-name { font-size: 15px; font-weight: 600; flex: 1; }
+  .ex-badge { font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 3px 7px; border-radius: 20px; text-transform: uppercase; flex-shrink: 0; }
+  .badge-heavy { background: var(--heavy)22; color: var(--heavy); border: 1px solid var(--heavy)44; }
+  .badge-troncal { background: var(--accent)22; color: var(--accent); border: 1px solid var(--accent)44; }
+  .badge-iso { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+  .series-container { padding: 0 16px 12px; display: flex; flex-direction: column; gap: 7px; }
+  .serie-row { display: flex; align-items: center; gap: 8px; }
+  .serie-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; min-width: 58px; flex-shrink: 0; }
+  .label-top { color: var(--topset); }
+  .label-backoff { color: var(--muted); }
+  .serie-inputs { display: flex; align-items: center; gap: 6px; flex: 1; }
+  .input-group { display: flex; align-items: center; gap: 3px; background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 6px 8px; transition: border-color .2s; flex: 1; }
+  .input-group:focus-within { border-color: var(--accent); }
+  .input-group.is-top:focus-within { border-color: var(--topset); }
+  .input-group input { background: none; border: none; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; width: 38px; text-align: right; outline: none; }
+  .input-unit { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+  .serie-sep { font-size: 12px; color: var(--border); flex-shrink: 0; }
+
+  .prev-hint { font-size: 11px; color: var(--muted); padding: 0 16px 10px; }
+  .delta { font-weight: 700; }
+  .delta.up { color: #47ff8a; }
+  .delta.down { color: var(--heavy); }
+
+  .save-btn { width: 100%; margin-top: 20px; padding: 15px; background: var(--accent); color: #0d0d0f; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px; border: none; border-radius: 12px; cursor: pointer; transition: all .2s; }
+  .save-btn:hover { background: #d4e83f; transform: translateY(-1px); }
+  .save-btn:active { transform: translateY(0); }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--accent); color: #0d0d0f; font-weight: 700; font-size: 13px; padding: 10px 22px; border-radius: 30px; transition: transform .3s ease; z-index: 999; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .rugby-card { background: var(--surface); border: 1px solid var(--light)33; border-radius: 12px; padding: 28px; text-align: center; }
+  .rugby-icon { font-size: 52px; margin-bottom: 14px; }
+  .rugby-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 3px; color: var(--light); margin-bottom: 8px; }
+  .rugby-card p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+  .prog-title { font-family: 'Bebas Neue', sans-serif; font-size: 40px; letter-spacing: 4px; margin-bottom: 20px; }
+  .prog-exercise { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 14px; overflow: hidden; }
+  .prog-ex-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .prog-ex-name { font-size: 15px; font-weight: 600; }
+  .prog-table { width: 100%; border-collapse: collapse; }
+  .prog-table th { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; padding: 8px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  .prog-table td { padding: 10px 16px; font-size: 13px; border-bottom: 1px solid var(--border)55; vertical-align: top; }
+  .prog-table tr:last-child td { border-bottom: none; }
+  .prog-set-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .prog-set-label.top { color: var(--topset); }
+  .prog-set-label.back { color: var(--muted); }
+  .prog-set-val { font-weight: 600; }
+
+  @media (max-width: 480px) {
+    main { padding: 14px; }
+    .day-name { font-size: 36px; }
+    .serie-label { min-width: 50px; font-size: 8px; }
+    .input-group input { width: 32px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">ENTRENAMIENTO</div>
+  <div class="week-selector">
+    <button onclick="changeWeek(-1)">&#8249;</button>
+    <span class="week-label" id="weekLabel">Semana 1</span>
+    <button onclick="changeWeek(1)">&#8250;</button>
+  </div>
+</nav>
+
+<div class="tabs">
+  <button class="tab active" onclick="showDay('lunes')">LUN</button>
+  <button class="tab" onclick="showDay('martes')">MAR</button>
+  <button class="tab rugby" onclick="showDay('miercoles')">MIE 🏉</button>
+  <button class="tab" onclick="showDay('jueves')">JUE</button>
+  <button class="tab rugby" onclick="showDay('viernes')">VIE 🏉</button>
+  <button class="tab" onclick="showDay('progresion')">📈</button>
+</div>
+
+<main id="main-content"></main>
+
+<div class="toast" id="toast">Guardado</div>
+
+<script>
+// ============================================================
+// DATA DEFINITION
+// ============================================================
+const DAYS = [
+  {
+    id: 'lunes',
+    name: 'LUNES',
+    color: 'var(--accent)',
+    subtitle: 'Pecho · Espalda · Brazos',
+    blocks: [
+      {
+        num: 'BLOQUE 1', title: 'Pecho plano + Dominadas pesadas',
+        exercises: [
+          { id: 'lunes_pecho_plano',   name: 'Pecho plano',       badge: 'TRONCAL', badgeClass: 'badge-troncal' },
+          { id: 'lunes_dominadas',     name: 'Dominadas pesadas', badge: 'TRONCAL', badgeClass: 'badge-troncal' },
+        ]
+      },
+      {
+        num: 'BLOQUE 2', title: 'Laterales + Tricep trasnuca + Bicep inclinado',
+        exercises: [
+          { id: 'lunes_laterales',        name: 'Laterales',            badge: 'ISO', badgeClass: 'badge-iso' },
+          { id: 'lunes_tricep_trasnuca',  name: 'Tricep trasnuca',      badge: 'ISO', badgeClass: 'badge-iso' },
+          { id: 'lunes_bicep_inc',        name: 'Bicep banco inclinado',badge: 'ISO', badgeClass: 'badge-iso' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'martes',
+    name: 'MARTES',
+    color: 'var(--accent2)',
+    subtitle: 'Piernas · Hombros · Brazos',
+    blocks: [
+      {
+        num: 'BLOQUE 1', title: 'Sentadilla con banco + Remo bajo',
+        exercises: [
+          { id: 'martes_sentadilla', name: 'Sentadilla con banco', badge: 'TRONCAL', badgeClass: 'badge-troncal' },
+          { id: 'martes_remo_bajo',  name: 'Remo bajo',            badge: 'PESADO',  badgeClass: 'badge-heavy' },
+        ]
+      },
+      {
+        num: 'BLOQUE 2', title: 'Press hombros + Dorsalera',
+        exercises: [
+          { id: 'martes_press_hombros', name: 'Press de hombros', badge: 'PESADO', badgeClass: 'badge-heavy' },
+          { id: 'martes_dorsalera',     name: 'Dorsalera',        badge: 'ISO',    badgeClass: 'badge-iso' },
+        ]
+      },
+      {
+        num: 'BLOQUE 3', title: 'Extensiones Tricep + Bicep',
+        exercises: [
+          { id: 'martes_ext_tricep', name: 'Extensiones tricep', badge: 'ISO', badgeClass: 'badge-iso' },
+          { id: 'martes_bicep',      name: 'Bicep',              badge: 'ISO', badgeClass: 'badge-iso' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'jueves',
+    name: 'JUEVES',
+    color: 'var(--accent)',
+    subtitle: 'Pecho · Cargadas · Hombros · Posteriores',
+    blocks: [
+      {
+        num: 'BLOQUE 1', title: 'Pecho plano + Cargadas',
+        exercises: [
+          { id: 'jueves_pecho_plano', name: 'Pecho plano', badge: 'TRONCAL', badgeClass: 'badge-troncal' },
+          { id: 'jueves_cargadas',    name: 'Cargadas',    badge: 'TRONCAL', badgeClass: 'badge-troncal' },
+        ]
+      },
+      {
+        num: 'BLOQUE 2', title: 'Pecho inclinado + Aperturas + Vuelos laterales',
+        exercises: [
+          { id: 'jueves_pecho_inc',  name: 'Pecho inclinado', badge: 'PESADO', badgeClass: 'badge-heavy' },
+          { id: 'jueves_aperturas',  name: 'Aperturas',       badge: 'ISO',    badgeClass: 'badge-iso' },
+          { id: 'jueves_vuelos_lat', name: 'Vuelos laterales',badge: 'ISO',    badgeClass: 'badge-iso' },
+        ]
+      },
+      {
+        num: 'BLOQUE 3', title: 'Posteriores + Abs',
+        exercises: [
+          { id: 'jueves_posteriores', name: 'Posteriores', badge: 'ISO', badgeClass: 'badge-iso' },
+          { id: 'jueves_abs',         name: 'Abs',         badge: 'ISO', badgeClass: 'badge-iso' },
+        ]
+      }
+    ]
+  }
+];
+
+// Solo estos 4 ejercicios tienen top set + backoffs
+const SERIES_COMPLETAS = new Set([
+  'lunes_pecho_plano',
+  'lunes_dominadas',
+  'martes_sentadilla',
+  'jueves_pecho_plano',
+  'jueves_cargadas',
+]);
+
+const TRONCALES_PROG = [
+  { id: 'lunes_pecho_plano',  name: 'Pecho Plano',  day: 'Lunes' },
+  { id: 'lunes_dominadas',    name: 'Dominadas',    day: 'Lunes' },
+  { id: 'martes_sentadilla',  name: 'Sentadilla',   day: 'Martes' },
+  { id: 'jueves_pecho_plano', name: 'Pecho Plano',  day: 'Jueves' },
+  { id: 'jueves_cargadas',    name: 'Cargadas',     day: 'Jueves' },
+];
+
+// ============================================================
+// BUILD HTML DYNAMICALLY
+// ============================================================
+function buildSerieRow(exId, serieType, label, labelClass) {
+  const kgKey = `${exId}_${serieType}_kg`;
+  const rKey  = `${exId}_${serieType}_r`;
+  const isTop = serieType === 'ts';
+  return `
+    <div class="serie-row">
+      <span class="serie-label ${labelClass}">${label}</span>
+      <div class="serie-inputs">
+        <div class="input-group${isTop ? ' is-top' : ''}">
+          <input type="number" data-key="${kgKey}" placeholder="—" min="0" step="0.5">
+          <span class="input-unit">kg</span>
+        </div>
+        <span class="serie-sep">x</span>
+        <div class="input-group${isTop ? ' is-top' : ''}">
+          <input type="number" data-key="${rKey}" placeholder="—" min="0" step="1">
+          <span class="input-unit">rep</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function buildExercise(ex) {
+  if (SERIES_COMPLETAS.has(ex.id)) {
+    return `
+      <div class="exercise-section">
+        <div class="ex-header">
+          <span class="ex-name">${ex.name}</span>
+          <span class="ex-badge ${ex.badgeClass}">${ex.badge}</span>
+        </div>
+        <div class="series-container">
+          ${buildSerieRow(ex.id, 'ts', 'TOP SET', 'label-top')}
+          ${buildSerieRow(ex.id, 'b1', 'BACKOFF 1', 'label-backoff')}
+          ${buildSerieRow(ex.id, 'b2', 'BACKOFF 2', 'label-backoff')}
+        </div>
+        <div class="prev-hint" id="prev-${ex.id}"></div>
+      </div>`;
+  } else {
+    return `
+      <div class="exercise-section">
+        <div class="ex-header">
+          <span class="ex-name">${ex.name}</span>
+          <span class="ex-badge ${ex.badgeClass}">${ex.badge}</span>
+          <div class="input-group" style="max-width:110px;margin-left:auto">
+            <input type="number" data-key="${ex.id}_kg" placeholder="—" min="0" step="0.5">
+            <span class="input-unit">kg</span>
+          </div>
+        </div>
+        <div class="prev-hint" id="prev-${ex.id}" style="padding:0 16px 10px"></div>
+      </div>`;
+  }
+}
+
+function buildDay(day) {
+  const blocksHtml = day.blocks.map(block => `
+    <div class="block">
+      <div class="block-header">
+        <span class="block-num">${block.num}</span>
+        <span class="block-title">${block.title}</span>
+      </div>
+      ${block.exercises.map(buildExercise).join('')}
+    </div>`).join('');
+
+  return `
+    <div class="day-view${day.id === 'lunes' ? ' active' : ''}" id="view-${day.id}">
+      <div class="day-header">
+        <div class="day-name" style="color:${day.color}">${day.name}</div>
+        <div class="day-subtitle">${day.subtitle}</div>
+      </div>
+      ${blocksHtml}
+      <button class="save-btn" onclick="saveDay('${day.id}')">GUARDAR ${day.name}</button>
+    </div>`;
+}
+
+function buildRugby(id, name, color, msg) {
+  return `
+    <div class="day-view" id="view-${id}">
+      <div class="day-header">
+        <div class="day-name" style="color:${color}">${name}</div>
+        <div class="day-subtitle">Entrenamiento de rugby</div>
+      </div>
+      <div class="rugby-card">
+        <div class="rugby-icon">🏉</div>
+        <h2>RUGBY DAY</h2>
+        <p>${msg}</p>
+      </div>
+    </div>`;
+}
+
+const main = document.getElementById('main-content');
+main.innerHTML =
+  DAYS.map(buildDay).join('') +
+  buildRugby('miercoles','MIERCOLES','var(--light)',
+    'Gym incluido con peso ligero.<br>Priorizas los dias individuales.<br><br><span style="color:var(--text);font-weight:600">Si no podes ir Lun o Mar, aca apretas mas.</span>') +
+  buildRugby('viernes','VIERNES','var(--light)',
+    'Entrenamiento de rugby.<br><br><span style="color:var(--text);font-weight:600">Si faltaste Lun o Mar, este es el momento de recuperar.</span>') +
+  `<div class="day-view" id="view-progresion">
+    <div class="prog-title">PROGRESION</div>
+    <div id="progresion-content"></div>
+  </div>`;
+
+// ============================================================
+// STATE
+// ============================================================
+let currentWeek = 1;
+const MAX_WEEKS = 30;
+
+function lsKey(w, k) { return `w${w}_${k}`; }
+function save(w, k, v) { localStorage.setItem(lsKey(w, k), v); }
+function load(w, k) { return localStorage.getItem(lsKey(w, k)); }
+
+// ============================================================
+// LOAD / SAVE
+// ============================================================
+function loadWeek(w) {
+  document.querySelectorAll('[data-key]').forEach(input => {
+    input.value = load(w, input.dataset.key) || '';
+  });
+  // Update all prev hints
+  DAYS.forEach(day => day.blocks.forEach(block => block.exercises.forEach(ex => updatePrev(w, ex.id))));
+}
+
+function updatePrev(w, exId) {
+  const el = document.getElementById('prev-' + exId);
+  if (!el || w <= 1) { if (el) el.textContent = ''; return; }
+  if (SERIES_COMPLETAS.has(exId)) {
+    const pKg = load(w - 1, exId + '_ts_kg');
+    const pR  = load(w - 1, exId + '_ts_r');
+    if (!pKg && !pR) { el.textContent = ''; return; }
+    const cKg = load(w, exId + '_ts_kg');
+    let html = `Sem. ant. top set: <strong>${pKg || '?'}kg x ${pR || '?'}</strong>`;
+    if (cKg && pKg) {
+      const diff = parseFloat(cKg) - parseFloat(pKg);
+      if (diff !== 0) {
+        const cls = diff > 0 ? 'up' : 'down';
+        html += ` <span class="delta ${cls}">${diff > 0 ? '+' : ''}${diff}kg</span>`;
+      }
+    }
+    el.innerHTML = html;
+  } else {
+    const pKg = load(w - 1, exId + '_kg');
+    if (!pKg) { el.textContent = ''; return; }
+    const cKg = load(w, exId + '_kg');
+    let html = `Sem. ant.: <strong>${pKg}kg</strong>`;
+    if (cKg && pKg) {
+      const diff = parseFloat(cKg) - parseFloat(pKg);
+      if (diff !== 0) {
+        const cls = diff > 0 ? 'up' : 'down';
+        html += ` <span class="delta ${cls}">${diff > 0 ? '+' : ''}${diff}kg</span>`;
+      }
+    }
+    el.innerHTML = html;
+  }
+}
+
+function saveDay(dayId) {
+  document.querySelectorAll(`#view-${dayId} [data-key]`).forEach(input => {
+    if (input.value !== '') save(currentWeek, input.dataset.key, input.value);
+  });
+  loadWeek(currentWeek);
+  showToast('Semana ' + currentWeek + ' guardada');
+}
+
+function changeWeek(delta) {
+  const n = currentWeek + delta;
+  if (n < 1 || n > MAX_WEEKS) return;
+  currentWeek = n;
+  document.getElementById('weekLabel').textContent = `Semana ${n}`;
+  loadWeek(n);
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showDay(day) {
+  document.querySelectorAll('.day-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + day).classList.add('active');
+  const map = { lunes:0, martes:1, miercoles:2, jueves:3, viernes:4, progresion:5 };
+  if (map[day] !== undefined) document.querySelectorAll('.tab')[map[day]].classList.add('active');
+  if (day === 'progresion') renderProgresion();
+  else loadWeek(currentWeek);
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ============================================================
+// PROGRESION
+// ============================================================
+function renderProgresion() {
+  const container = document.getElementById('progresion-content');
+  let html = '';
+
+  TRONCALES_PROG.forEach(ex => {
+    const rows = [];
+    for (let w = 1; w <= currentWeek; w++) {
+      const tsKg = load(w, ex.id + '_ts_kg');
+      const tsR  = load(w, ex.id + '_ts_r');
+      const b1Kg = load(w, ex.id + '_b1_kg');
+      const b1R  = load(w, ex.id + '_b1_r');
+      const b2Kg = load(w, ex.id + '_b2_kg');
+      const b2R  = load(w, ex.id + '_b2_r');
+      if (tsKg || tsR || b1Kg || b2Kg) rows.push({ w, tsKg, tsR, b1Kg, b1R, b2Kg, b2R });
+    }
+
+    if (!rows.length) {
+      html += `<div class="prog-exercise">
+        <div class="prog-ex-header">
+          <span class="prog-ex-name">${ex.name} <span style="color:var(--muted);font-size:11px">(${ex.day})</span></span>
+          <span class="ex-badge badge-troncal">TRONCAL</span>
+        </div>
+        <div style="padding:16px;color:var(--muted);font-size:13px">Sin datos aun</div>
+      </div>`; return;
+    }
+
+    const weights = rows.filter(r => r.tsKg).map(r => parseFloat(r.tsKg));
+    const maxKg   = weights.length ? Math.max(...weights) : null;
+    const first   = rows[0].tsKg ? parseFloat(rows[0].tsKg) : null;
+    const latest  = rows[rows.length-1].tsKg ? parseFloat(rows[rows.length-1].tsKg) : null;
+    let gainHtml  = '';
+    if (first !== null && latest !== null && rows.length > 1) {
+      const diff = latest - first;
+      const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : '';
+      gainHtml = `<span class="delta ${cls}" style="font-size:13px">${diff >= 0 ? '+' : ''}${diff}kg top set</span>`;
+    }
+
+    const trows = rows.map(r => {
+      const isMax = r.tsKg && parseFloat(r.tsKg) === maxKg;
+      const tsCell = `<div class="prog-set-label top">TOP SET ${isMax ? '🏆' : ''}</div><div class="prog-set-val">${r.tsKg||'—'}kg x ${r.tsR||'—'}</div>`;
+      const b1Cell = (r.b1Kg||r.b1R) ? `<div class="prog-set-label back">BACKOFF 1</div><div class="prog-set-val">${r.b1Kg||'—'}kg x ${r.b1R||'—'}</div>` : '';
+      const b2Cell = (r.b2Kg||r.b2R) ? `<div class="prog-set-label back">BACKOFF 2</div><div class="prog-set-val">${r.b2Kg||'—'}kg x ${r.b2R||'—'}</div>` : '';
+      return `<tr><td style="font-weight:600;color:var(--muted);font-size:11px;white-space:nowrap">SEM ${r.w}</td><td>${tsCell}${b1Cell}${b2Cell}</td></tr>`;
+    }).join('');
+
+    html += `<div class="prog-exercise">
+      <div class="prog-ex-header">
+        <span class="prog-ex-name">${ex.name} <span style="color:var(--muted);font-size:11px">(${ex.day})</span></span>
+        ${gainHtml}
+      </div>
+      <table class="prog-table">
+        <thead><tr><th>Sem.</th><th>Series</th></tr></thead>
+        <tbody>${trows}</tbody>
+      </table>
+    </div>`;
+  });
+
+  container.innerHTML = html || '<p style="color:var(--muted)">Todavia no hay datos.</p>';
+}
+
+// ============================================================
+// AUTO-SAVE ON CHANGE
+// ============================================================
+document.addEventListener('change', e => {
+  if (!e.target.dataset.key) return;
+  save(currentWeek, e.target.dataset.key, e.target.value);
+  const k = e.target.dataset.key;
+  // For series keys: exId_ts_kg / exId_b1_r -> strip last 2 parts
+  // For simple keys: exId_kg -> strip last 1 part
+  const parts = k.split('_');
+  const lastTwo = parts.slice(-2).join('_');
+  const isSeries = ['ts_kg','ts_r','b1_kg','b1_r','b2_kg','b2_r'].includes(lastTwo);
+  const exId = isSeries ? parts.slice(0,-2).join('_') : parts.slice(0,-1).join('_');
+  updatePrev(currentWeek, exId);
+});
+
+// ============================================================
+// INIT
+// ============================================================
+loadWeek(1);
+</script>
+</body>
+</html>
